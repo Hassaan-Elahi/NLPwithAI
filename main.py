@@ -383,6 +383,12 @@ def GunningFoxIndex(text, NoOfSentences):
     return G
 
 
+def PrepareData(text1, text2, Winsize):
+    chunks1 = slidingWindow(text1, Winsize, Winsize)
+    chunks2 = slidingWindow(text2, Winsize, Winsize)
+    return " ".join(str(chunk1) + str(chunk2) for chunk1, chunk2 in zip(chunks1, chunks2))
+
+
 # ------------------------------------------------------------------
 
 # THINK ABOUT STEMMING AND LEMMATIZATION WEATHER THEY ARE USEFUL OR NOT
@@ -397,6 +403,8 @@ def FeatureExtration(text, winSize, step):
     vector = []
     for chunk in chunks:
         feature = []
+
+        '''
         # LEXICAL FEATURES
         meanwl = (Avg_wordLenght(chunk))
         feature.append(meanwl)
@@ -418,9 +426,10 @@ def FeatureExtration(text, winSize, step):
 
         f = CountFunctionalWords(text)
         feature.append(f)
+        
 
+        
         # VOCABULARY RICHNESS FEATURES
-
         meanfrc = AvgWordFrequencyClass(chunk)
         feature.append(meanfrc)
 
@@ -447,6 +456,8 @@ def FeatureExtration(text, winSize, step):
         Shannon = ShannonEntropy(text)
         feature.append(Shannon)
 
+        '''
+
         # READIBILTY FEATURES
         FR = FleschReadingEase(chunk, winSize)
         feature.append(FR)
@@ -470,55 +481,50 @@ def FeatureExtration(text, winSize, step):
 
 
 def Analysis(vector, K=2):
-    arr = np.array(vector)
+    arr = (np.array(vector))
 
-    '''
-    #mean normalization of the data . converting into normal distribution having mean=0 , -0.1<x<0.1
+    # mean normalization of the data . converting into normal distribution having mean=0 , -0.1<x<0.1
     sc = StandardScaler()
-    x = sc.fit_transform(vector)
+    x = sc.fit_transform(arr)
 
-
-    #Breaking into principle components
-    pca = PCA(n_components=2)
-    components = (pca.fit_transform(x))
-
-    '''
+    # Breaking into principle components
+    #pca = PCA(n_components=2)
+    #components = (pca.fit_transform(x))
+    components = arr
     # Applying kmean algorithm for finding centroids
 
     kmeans = KMeans(n_clusters=K, n_jobs=-1)
-    kmeans.fit_transform(vector)
+    kmeans.fit_transform(components)
     print("labels: ", kmeans.labels_)
-    return kmeans.cluster_centers_
+    centers = kmeans.cluster_centers_
 
-
-'''
-    hellow
-    #lables are assigned by the algorithm if 2 clusters then lables would be 0 or 1
+    # lables are assigned by the algorithm if 2 clusters then lables would be 0 or 1
     lables = kmeans.labels_
-    colors = ["r." , "g." , "b." , "y." , "c."]
-    colors = colors[:K+1]
+    colors = ["r.", "g.", "b.", "y.", "c."]
+    colors = colors[:K + 1]
 
     for i in range(len(components)):
-        plt.plot(components[i][0] , components[i][1] , colors[lables[i]] , markersize = 10)
+        plt.plot(components[i][0], components[i][1], colors[lables[i]], markersize=10)
 
-    plt.scatter(centers[:,0] , centers[:,1] , marker="x" , s = 150, linewidths=10 , zorder = 15)
+    plt.scatter(centers[:, 0], centers[:, 1], marker="x", s=150, linewidths=10, zorder=15)
     plt.xlabel("1st principle Component")
     plt.ylabel("2nd principle Component")
     title = ""
     plt.title(title)
-    plt.savefig("i" +".png")
+    plt.savefig("i" + ".png")
     plt.show()
 
-'''
 
 if __name__ == '__main__':
-    vector = []
 
-    for i in range(0, 2):
-        text = (open(str(i + 1) + ".txt", "r", encoding='utf8').read())
-        vector += FeatureExtration(text, winSize=10, step=10)
-        print("features calculated")
+    children = open("childrenStory.txt").read()
+    paper = open("Paper.txt").read()
+    text = PrepareData(paper, paper, 10)
 
+
+    vector = FeatureExtration(children, winSize=10, step=10)
+
+    Analysis(vector)
 
     '''
     combination = []
@@ -529,5 +535,4 @@ if __name__ == '__main__':
     for i in range(0 , len(combination)):
         for j in combination[i]:
             AnalysisVector+=vector[j]
-
     '''
