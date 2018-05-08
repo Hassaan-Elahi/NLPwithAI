@@ -69,7 +69,7 @@ def syllable_count_Manual(word):
 
 
 # ---------------------------------------------------------------------
-# COUNTS NUMBER OF SYLLABLE
+# COUNTS NUMBER OF SYLLABLEk
 
 def syllable_count(word):
     global cmuDictionary
