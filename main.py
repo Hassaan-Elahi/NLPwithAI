@@ -51,7 +51,6 @@ def slidingWindow(sequence, winSize, step=1):
 
     return l
 
-
 def syllable_count_Manual(word):
     word = word.lower()
     count = 0
@@ -140,7 +139,6 @@ def CountSpecialCharacter(text):
 
 
 # ----------------------------------------------------------------------------
-
 
 def CountPuncuation(text):
     st = [",", ".", "'", "!", '"', ";", "?", ":", ";"]
@@ -404,7 +402,6 @@ def FeatureExtration(text, winSize, step):
     for chunk in chunks:
         feature = []
 
-        '''
         # LEXICAL FEATURES
         meanwl = (Avg_wordLenght(chunk))
         feature.append(meanwl)
@@ -426,12 +423,9 @@ def FeatureExtration(text, winSize, step):
 
         f = CountFunctionalWords(text)
         feature.append(f)
-        
 
-        
+
         # VOCABULARY RICHNESS FEATURES
-        meanfrc = AvgWordFrequencyClass(chunk)
-        feature.append(meanfrc)
 
         TTratio = typeTokenRatio(chunk)
         feature.append(TTratio)
@@ -456,8 +450,7 @@ def FeatureExtration(text, winSize, step):
         Shannon = ShannonEntropy(text)
         feature.append(Shannon)
 
-        '''
-
+        
         # READIBILTY FEATURES
         FR = FleschReadingEase(chunk, winSize)
         feature.append(FR)
@@ -465,9 +458,14 @@ def FeatureExtration(text, winSize, step):
         FC = FleschCincadeGradeLevel(chunk, winSize)
         feature.append(FC)
 
+
+
+
+        #also quite a different
         D = dale_chall_readability_formula(chunk, winSize)
         feature.append(D)
 
+        # quite a difference
         G = GunningFoxIndex(chunk, winSize)
         feature.append(G)
 
@@ -476,9 +474,30 @@ def FeatureExtration(text, winSize, step):
     return vector
 
 
+
+#-----------------------------------------------------------------------------------------
+#ELBOW METHOD
+def ElbowMethod(data):
+
+    X = data # <your_data>
+    distorsions = []
+    for k in range(1, 10):
+        kmeans = KMeans(n_clusters=k)
+        kmeans.fit(X)
+        distorsions.append(kmeans.inertia_)
+
+    fig = plt.figure(figsize=(15, 5))
+    plt.plot(range(1, 10), distorsions , 'bo-')
+    plt.grid(True)
+    plt.ylabel("Square Root Error")
+    plt.xlabel("Number of Clusters")
+    plt.title('Elbow curve')
+    plt.savefig("ElbowCurve.png")
+    plt.show()
+
+
 # -----------------------------------------------------------------------------------------
 # ANALYSIS PART
-
 
 def Analysis(vector, K=2):
     arr = (np.array(vector))
@@ -488,9 +507,8 @@ def Analysis(vector, K=2):
     x = sc.fit_transform(arr)
 
     # Breaking into principle components
-    #pca = PCA(n_components=2)
-    #components = (pca.fit_transform(x))
-    components = arr
+    pca = PCA(n_components=2)
+    components = (pca.fit_transform(x))
     # Applying kmean algorithm for finding centroids
 
     kmeans = KMeans(n_clusters=K, n_jobs=-1)
@@ -517,22 +535,9 @@ def Analysis(vector, K=2):
 
 if __name__ == '__main__':
 
-    children = open("childrenStory.txt").read()
-    paper = open("Paper.txt").read()
-    text = PrepareData(paper, paper, 10)
-
-
-    vector = FeatureExtration(children, winSize=10, step=10)
-
+    text = open("DocumentWithVarientWritingStyles.txt").read()
+    vector = FeatureExtration(text, winSize=10, step=10)
+    ElbowMethod(np.array(vector))
     Analysis(vector)
 
-    '''
-    combination = []
-    for t in range(2 , 5):
-        combination += (list(itertools.combinations(range(0, 5), t)))
 
-    AnalysisVector = []
-    for i in range(0 , len(combination)):
-        for j in combination[i]:
-            AnalysisVector+=vector[j]
-    '''
